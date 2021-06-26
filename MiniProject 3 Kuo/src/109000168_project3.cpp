@@ -43,6 +43,10 @@ public:
         Point(0, -1), /*{0, 0}, */Point(0, 1),
         Point(1, -1), Point(1, 0), Point(1, 1)
     }};
+    const std::array<Point, 8> direction {{
+	Point(0, 0), Point(0, SIZE-1),
+	Point(SIZE-1, 0), Point(SIZE-1, SIZE-1)
+    }};
     std::array<std::array<int, SIZE>, SIZE> board;
     std::vector<Point> next_valid_spots;
     std::array<int, 3> disc_count;
