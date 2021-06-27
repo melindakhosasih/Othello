@@ -5,7 +5,6 @@
 #include <cstdlib>
 #include <ctime>
 #include <bits/stdc++.h>
-#define DEPTH 4
 #define MAX INT_MAX
 #define MIN INT_MIN
 
@@ -33,6 +32,7 @@ struct Point {
 };
 
 int player;
+int DEPTH;
 const int SIZE = 8;
 //std::array<std::array<int, SIZE>, SIZE> main_board;
 std::array<std::array<int, SIZE>, SIZE> weight = {{
@@ -330,6 +330,8 @@ OthelloBoard main_board;
 
 void read_board(std::ifstream& fin) {
     fin >> player;
+    if (player == 1) DEPTH = 4;
+    else if(player == 2) DEPTH = 5;
     main_board.cur_player = player;
     for (int i = 0; i < SIZE; i++) {
         for (int j = 0; j < SIZE; j++) {
@@ -353,7 +355,7 @@ void read_valid_spots(std::ifstream& fin) {
 
 int minimax (OthelloBoard &curr_board, int depth, int alpha, int beta, bool isMaximizingPlayer) {
     int value;
-    if(next_valid_spots.size() == 0 || depth == 0) {
+    if(curr_board.next_valid_spots.size() == 0 || depth == 0) {
         value = curr_board.heuristic;
         //std::cout << "VALUEEEEE " << value << std::endl;
         return value;
