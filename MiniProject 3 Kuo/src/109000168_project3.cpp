@@ -5,7 +5,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <bits/stdc++.h>
-#define DEPTH 3
+#define DEPTH 4
 #define MAX INT_MAX
 #define MIN INT_MIN
 
@@ -25,11 +25,11 @@ struct Point {
 	Point operator-(const Point& rhs) const {
 		return Point(x - rhs.x, y - rhs.y);
 	}
-	Point operator=(const Point& rhs) {
-        x = rhs.x;
-        y = rhs.y;
-        return *this;
-	}
+	// Point operator=(const Point& rhs) {
+    //     x = rhs.x;
+    //     y = rhs.y;
+    //     return *this;
+	// }
 };
 
 int player;
@@ -159,22 +159,22 @@ public:
         heuristic = rhs.heuristic;
         return *this;
 	}
-    void reset() {
-//        for (int i = 0; i < SIZE; i++) {
-//            for (int j = 0; j < SIZE; j++) {
-//                board[i][j] = EMPTY;
-//            }
-//        }
-//        board[3][4] = board[4][3] = BLACK;
-//        board[3][3] = board[4][4] = WHITE;
-//        cur_player = BLACK;
-//        disc_count[EMPTY] = 8*8-4;
-//        disc_count[BLACK] = 2;
-//        disc_count[WHITE] = 2;
-        //next_valid_spots = get_valid_spots();
-        //done = false;
-        //winner = -1;
-    }
+    // void reset() {
+    //     for (int i = 0; i < SIZE; i++) {
+    //         for (int j = 0; j < SIZE; j++) {
+    //             board[i][j] = EMPTY;
+    //         }
+    //     }
+    //     board[3][4] = board[4][3] = BLACK;
+    //     board[3][3] = board[4][4] = WHITE;
+    //     cur_player = BLACK;
+    //     disc_count[EMPTY] = 8*8-4;
+    //     disc_count[BLACK] = 2;
+    //     disc_count[WHITE] = 2;
+    //     next_valid_spots = get_valid_spots();
+    //     done = false;
+    //     winner = -1;
+    // }
     std::vector<Point> get_valid_spots() const {
         std::vector<Point> valid_spots;
         for (int i = 0; i < SIZE; i++) {
@@ -361,38 +361,43 @@ int minimax (OthelloBoard &curr_board, int depth, int alpha, int beta, bool isMa
 
     if(isMaximizingPlayer) {
         value = MIN;
-        for(auto spot : next_valid_spots) {
+        //std::cout << "SPOTTTT " << curr_board.next_valid_spots.size() << std::endl;
+        if(curr_board.next_valid_spots.size() == 0) return curr_board.heuristic;
+        for(auto spot : curr_board.next_valid_spots) {
             OthelloBoard next_board = curr_board;
             next_board.put_disc(spot);
             int child = minimax(next_board, depth-1, alpha, beta, false);
             if(child > value) {
                 value = child;
                 curr_board.recommended_spot = spot;
+                //std::cout << "the spot " << spot.x << " " << spot.y << std::endl;
+                //std::cout << "the ori spot " << main_board.recommended_spot.x << " " << main_board.recommended_spot.y << std::endl;
                 alpha = std::max(alpha, value);
-                if(alpha >= beta)
-                    break;
-                 if(depth == DEPTH) {
-                     //main_board.heuristic = value;
-                     std::cout << "THE PATH OUT MAXI \n";
-                     std::cout << spot.x << " " << spot.y << std::endl;
-                     std::cout << "HEURISTIC " << value << std:: endl;
-                     // fout << spot.x << " " << spot.y << std::endl;
-                     // fout.flush();
-                 }
+                //  if(depth == DEPTH) {
+                //      //main_board.heuristic = value;
+                //      std::cout << "THE PATH OUT MAXI \n";
+                //      std::cout << spot.x << " " << spot.y << std::endl;
+                //      std::cout << "HEURISTIC " << value << std:: endl;
+                //      std::cout << "HEURISTIC " << value << std:: endl;
+                //      // fout << spot.x << " " << spot.y << std::endl;
+                //      // fout.flush();
+                //  }
             }
+            if(alpha >= beta)
+                    break;
         }
     }
     else {
         value = MAX;
-        for(auto spot : next_valid_spots) {
+        if(curr_board.next_valid_spots.size() == 0) return curr_board.heuristic;
+        for(auto spot : curr_board.next_valid_spots) {
             OthelloBoard next_board = curr_board;
             next_board.put_disc(spot);
             int child = minimax(next_board, depth-1, alpha, beta, true);
             if(child < value) {
                 value = child;
                 beta = std::min(beta, value);
-                if(beta <= alpha)
-                    break;
+                
                 //curr_board.recommended_spot = spot;
                 //std::cout << "HEURISTIC DECIDED " << main_board.heuristic << std::endl;
                 // if(depth == DEPTH) {
@@ -403,6 +408,8 @@ int minimax (OthelloBoard &curr_board, int depth, int alpha, int beta, bool isMa
                 //     // fout.flush();
                 // }
             }
+            if(beta <= alpha)
+                    break;
         }
     }
     //std::cout << "HEURISTIC DECIDED " << value << std::endl;
@@ -436,6 +443,7 @@ void write_valid_spot(std::ofstream& fout) {
         minimax(main_board, DEPTH, alpha, beta, true);
         std::cout << "HEURISTIC LAST " << main_board.heuristic << std::endl;
         p = main_board.recommended_spot;
+        std::cout << "LAST SPOT " << p.x << " " << p.y << std::endl;
         // for(auto spot : next_valid_spots) {
         //     std::cout << "MINIMAX\n";
         //     std::cout << spot.x << " " << spot.y << std::endl;
