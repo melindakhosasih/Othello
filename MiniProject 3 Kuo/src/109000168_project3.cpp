@@ -351,7 +351,7 @@ void read_valid_spots(std::ifstream& fin) {
     std::cout << "HEURISTIC INITIAL " << main_board.heuristic << std::endl;
 }
 
-int minimax (OthelloBoard &curr_board, int depth, bool isMaximizingPlayer) {
+int minimax (OthelloBoard &curr_board, int depth, int alpha, int beta, bool isMaximizingPlayer) {
     int value;
     if(next_valid_spots.size() == 0 || depth == 0) {
         value = curr_board.heuristic;
@@ -364,16 +364,21 @@ int minimax (OthelloBoard &curr_board, int depth, bool isMaximizingPlayer) {
         for(auto spot : next_valid_spots) {
             OthelloBoard next_board = curr_board;
             next_board.put_disc(spot);
-            int child = minimax(next_board, depth-1, false);
+            int child = minimax(next_board, depth-1, alpha, beta, false);
             if(child > value) {
                 value = child;
                 curr_board.recommended_spot = spot;
-                if(depth == DEPTH) {
-                    std::cout << "THE PATH OUT MAXI \n";
-                    std::cout << spot.x << " " << spot.y << std::endl;
-                    // fout << spot.x << " " << spot.y << std::endl;
-                    // fout.flush();
-                }
+                alpha = std::max(alpha, value);
+                if(alpha >= beta)
+                    break;
+                 if(depth == DEPTH) {
+                     //main_board.heuristic = value;
+                     std::cout << "THE PATH OUT MAXI \n";
+                     std::cout << spot.x << " " << spot.y << std::endl;
+                     std::cout << "HEURISTIC " << value << std:: endl;
+                     // fout << spot.x << " " << spot.y << std::endl;
+                     // fout.flush();
+                 }
             }
         }
     }
@@ -382,16 +387,21 @@ int minimax (OthelloBoard &curr_board, int depth, bool isMaximizingPlayer) {
         for(auto spot : next_valid_spots) {
             OthelloBoard next_board = curr_board;
             next_board.put_disc(spot);
-            int child = minimax(next_board, depth-1, true);
+            int child = minimax(next_board, depth-1, alpha, beta, true);
             if(child < value) {
                 value = child;
-                curr_board.recommended_spot = spot;
-                if(depth == DEPTH) {
-                    std::cout << "THE PATH OUT MINIMUM\n";
-                    std::cout << spot.x << " " << spot.y << std::endl;
-                    // fout << spot.x << " " << spot.y << std::endl;
-                    // fout.flush();
-                }
+                beta = std::min(beta, value);
+                if(beta <= alpha)
+                    break;
+                //curr_board.recommended_spot = spot;
+                //std::cout << "HEURISTIC DECIDED " << main_board.heuristic << std::endl;
+                // if(depth == DEPTH) {
+                //     //main_board.heuristic = value;
+                //     // std::cout << "THE PATH OUT MINIMUM\n";
+                //     // std::cout << spot.x << " " << spot.y << std::endl;
+                //     // fout << spot.x << " " << spot.y << std::endl;
+                //     // fout.flush();
+                // }
             }
         }
     }
@@ -421,7 +431,9 @@ void write_valid_spot(std::ofstream& fout) {
         // std::cout << p.x << " " << p.y << std::endl;
     }
     else {
-        minimax(main_board, DEPTH, true);
+        int alpha = MIN;
+        int beta = MAX;
+        minimax(main_board, DEPTH, alpha, beta, true);
         std::cout << "HEURISTIC LAST " << main_board.heuristic << std::endl;
         p = main_board.recommended_spot;
         // for(auto spot : next_valid_spots) {
