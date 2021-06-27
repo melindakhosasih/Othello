@@ -79,8 +79,8 @@ public:
     std::vector<Point> next_valid_spots;
     std::array<int, 3> disc_count;
     int cur_player;
-    bool done;
-    int winner;
+    //bool done;
+    //int winner;
     int heuristic;
     Point recommended_spot;
 private:
@@ -144,7 +144,7 @@ private:
     }
 public:
     OthelloBoard() {
-        reset();
+        //reset();
     }
     OthelloBoard operator=(const OthelloBoard& rhs) {
         for (int i = 0; i < SIZE; i++) {
@@ -153,8 +153,8 @@ public:
             }
         }
         next_valid_spots = rhs.next_valid_spots;
-        done = rhs.done;
-        winner = rhs.winner;
+        //done = rhs.done;
+        //winner = rhs.winner;
         recommended_spot = rhs.recommended_spot;
         heuristic = rhs.heuristic;
         return *this;
@@ -171,9 +171,9 @@ public:
 //        disc_count[EMPTY] = 8*8-4;
 //        disc_count[BLACK] = 2;
 //        disc_count[WHITE] = 2;
-        next_valid_spots = get_valid_spots();
-        done = false;
-        winner = -1;
+        //next_valid_spots = get_valid_spots();
+        //done = false;
+        //winner = -1;
     }
     std::vector<Point> get_valid_spots() const {
         std::vector<Point> valid_spots;
@@ -190,8 +190,8 @@ public:
     }
     bool put_disc(Point p) {
         if(!is_spot_valid(p)) {
-            winner = get_next_player(cur_player);
-            done = true;
+            //winner = get_next_player(cur_player);
+            //done = true;
             return false;
         }
         set_disc(p, cur_player);
@@ -202,19 +202,19 @@ public:
         cur_player = get_next_player(cur_player);
         next_valid_spots = get_valid_spots();
         // Check Win
-        if (next_valid_spots.size() == 0) {
-            cur_player = get_next_player(cur_player);
-            next_valid_spots = get_valid_spots();
-            if (next_valid_spots.size() == 0) {
-                // Game ends
-                done = true;
-                int white_discs = disc_count[WHITE];
-                int black_discs = disc_count[BLACK];
-                if (white_discs == black_discs) winner = EMPTY;
-                else if (black_discs > white_discs) winner = BLACK;
-                else winner = WHITE;
-            }
-        }
+        // if (next_valid_spots.size() == 0) {
+        //     cur_player = get_next_player(cur_player);
+        //     next_valid_spots = get_valid_spots();
+        //     if (next_valid_spots.size() == 0) {
+        //         // Game ends
+        //         done = true;
+        //         int white_discs = disc_count[WHITE];
+        //         int black_discs = disc_count[BLACK];
+        //         if (white_discs == black_discs) winner = EMPTY;
+        //         else if (black_discs > white_discs) winner = BLACK;
+        //         else winner = WHITE;
+        //     }
+        // }
         set_heuristic();
         return true;
     }
@@ -233,9 +233,9 @@ public:
         for(int i = 0; i < SIZE; i++) {
             for(int j = 0; j < SIZE; j++) {
                 if(board[i][j] == player)
-                    h += weight[i][j]*2;
+                    h += weight[i][j];
                 else if(board[i][j] == opponent)
-                    h -= weight[i][j]*2;
+                    h -= weight[i][j];
             }
         }
         int mobi = next_valid_spots.size();
@@ -350,7 +350,7 @@ void read_valid_spots(std::ifstream& fin) {
     main_board.set_heuristic();
 }
 
-int minimax (OthelloBoard &curr_board, int depth, bool isMaximizingPlayer, std::ofstream& fout) {
+int minimax (OthelloBoard &curr_board, int depth, bool isMaximizingPlayer) {
     int value;
     if(next_valid_spots.size() == 0 || depth == 0) {
         value = curr_board.heuristic;
@@ -363,15 +363,15 @@ int minimax (OthelloBoard &curr_board, int depth, bool isMaximizingPlayer, std::
         for(auto spot : next_valid_spots) {
             OthelloBoard next_board = curr_board;
             next_board.put_disc(spot);
-            int child = minimax(next_board, depth-1, false, fout);
+            int child = minimax(next_board, depth-1, false);
             if(child > value) {
                 value = child;
                 curr_board.recommended_spot = spot;
                 if(depth == DEPTH) {
-                    std::cout << "THE PATH OUT\n";
+                    std::cout << "THE PATH OUT MAXI \n";
                     std::cout << spot.x << " " << spot.y << std::endl;
-                    fout << spot.x << " " << spot.y << std::endl;
-                    fout.flush();
+                    // fout << spot.x << " " << spot.y << std::endl;
+                    // fout.flush();
                 }
             }
         }
@@ -381,15 +381,15 @@ int minimax (OthelloBoard &curr_board, int depth, bool isMaximizingPlayer, std::
         for(auto spot : next_valid_spots) {
             OthelloBoard next_board = curr_board;
             next_board.put_disc(spot);
-            int child = minimax(next_board, depth-1, true, fout);
+            int child = minimax(next_board, depth-1, true);
             if(child < value) {
                 value = child;
                 curr_board.recommended_spot = spot;
                 if(depth == DEPTH) {
-                    std::cout << "THE PATH OUT\n";
+                    std::cout << "THE PATH OUT MINIMUM\n";
                     std::cout << spot.x << " " << spot.y << std::endl;
-                    fout << spot.x << " " << spot.y << std::endl;
-                    fout.flush();
+                    // fout << spot.x << " " << spot.y << std::endl;
+                    // fout.flush();
                 }
             }
         }
@@ -419,7 +419,7 @@ void write_valid_spot(std::ofstream& fout) {
         // std::cout << p.x << " " << p.y << std::endl;
     }
     else {
-        minimax(main_board, DEPTH, true, fout);
+        minimax(main_board, DEPTH, true);
         p = main_board.recommended_spot;
         // for(auto spot : next_valid_spots) {
         //     std::cout << "MINIMAX\n";
@@ -438,7 +438,7 @@ void write_valid_spot(std::ofstream& fout) {
     }
     // Choose random spot. (Not random uniform here)
     // Remember to flush the output to ensure the last action is written to file.
-    std::cout << "THE PATH OUT\n";
+    std::cout << "REAL OUPUT\n";
     std::cout << p.x << " " << p.y << std::endl;
     fout << p.x << " " << p.y << std::endl;
     fout.flush();
