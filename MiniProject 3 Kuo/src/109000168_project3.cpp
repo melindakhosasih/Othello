@@ -219,14 +219,14 @@ public:
         return true;
     }
     void set_heuristic() {
-        for(int i = 0; i < 4; i++) {
-            Point c = corners[i];
-            if(get_disc(c) == player) {
-                Point p = xSquares[i];
-                //weight[p.x][p.y] = abs(weight[p.x][p.y] * 2);
-                p = cSquares[i*2+1];
-            }
-        }
+        // for(int i = 0; i < 4; i++) {
+        //     Point c = corners[i];
+        //     if(get_disc(c) == player) {
+        //         Point p = xSquares[i];
+        //         //weight[p.x][p.y] = abs(weight[p.x][p.y] * 2);
+        //         p = cSquares[i*2+1];
+        //     }
+        // }
 
         int h = 0;
         int opponent = get_next_player(player);
@@ -313,14 +313,14 @@ public:
             else
                 heuristic = h*1 + mobi*10 + stable*10 + flip*2;
 
-            for(int i = 0; i < 4; i++) {
-                Point c = corners[i];
-                if(get_disc(c) == player) {
-                    Point p = xSquares[i];
-                    //weight[p.x][p.y] = -abs(weight[p.x][p.y] / 2);
-                    //p = cSquares[i*2+1];
-                }
-            }
+            // for(int i = 0; i < 4; i++) {
+            //     Point c = corners[i];
+            //     if(get_disc(c) == player) {
+            //         Point p = xSquares[i];
+            //         //weight[p.x][p.y] = -abs(weight[p.x][p.y] / 2);
+            //         //p = cSquares[i*2+1];
+            //     }
+            // }
         }
         //std::cout << "HEURISTIC " << heuristic << std::endl;
     }
@@ -348,6 +348,7 @@ void read_valid_spots(std::ifstream& fin) {
     }
     main_board.next_valid_spots = next_valid_spots;
     main_board.set_heuristic();
+    std::cout << "HEURISTIC INITIAL " << main_board.heuristic << std::endl;
 }
 
 int minimax (OthelloBoard &curr_board, int depth, bool isMaximizingPlayer) {
@@ -394,6 +395,7 @@ int minimax (OthelloBoard &curr_board, int depth, bool isMaximizingPlayer) {
             }
         }
     }
+    //std::cout << "HEURISTIC DECIDED " << value << std::endl;
     return value;
 }
 
@@ -420,6 +422,7 @@ void write_valid_spot(std::ofstream& fout) {
     }
     else {
         minimax(main_board, DEPTH, true);
+        std::cout << "HEURISTIC LAST " << main_board.heuristic << std::endl;
         p = main_board.recommended_spot;
         // for(auto spot : next_valid_spots) {
         //     std::cout << "MINIMAX\n";
