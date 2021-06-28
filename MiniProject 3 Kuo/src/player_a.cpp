@@ -24,17 +24,11 @@ struct Point {
 	Point operator-(const Point& rhs) const {
 		return Point(x - rhs.x, y - rhs.y);
 	}
-	// Point operator=(const Point& rhs) {
-    //     x = rhs.x;
-    //     y = rhs.y;
-    //     return *this;
-	// }
 };
 
 int player;
 int DEPTH;
 const int SIZE = 8;
-//std::array<std::array<int, SIZE>, SIZE> main_board;
 std::array<std::array<int, SIZE>, SIZE> weight = {{
     {   4,  -3,  2,  2,  2,  2,  -3,  4},
     {  -3,  -4, -1, -1, -1, -1,  -4, -3},
@@ -65,22 +59,20 @@ public:
         Point(0, 0), Point(0, SIZE-1),
         Point(SIZE-1, 0), Point(SIZE-1, SIZE-1)
     }};
-    const std::array<Point, 4> xSquares {{
-	    Point(1, 1), Point(1, SIZE-2),
-	    Point(SIZE-2, 1), Point(SIZE-2, SIZE-2)
-    }};
-    const std::array<Point, 8> cSquares {{
-	    Point(0, 1), Point(0, SIZE-2),
-        Point(1, 0), Point(1, SIZE-2),
-        Point(SIZE-2, 0), Point(SIZE-2, SIZE-1),
-	    Point(SIZE-1, 1), Point(SIZE-1, SIZE-2)
-    }};
+    // const std::array<Point, 4> xSquares {{
+	//     Point(1, 1), Point(1, SIZE-2),
+	//     Point(SIZE-2, 1), Point(SIZE-2, SIZE-2)
+    // }};
+    // const std::array<Point, 8> cSquares {{
+	//     Point(0, 1), Point(0, SIZE-2),
+    //     Point(1, 0), Point(1, SIZE-2),
+    //     Point(SIZE-2, 0), Point(SIZE-2, SIZE-1),
+	//     Point(SIZE-1, 1), Point(SIZE-1, SIZE-2)
+    // }};
     std::array<std::array<int, SIZE>, SIZE> board;
     std::vector<Point> next_valid_spots;
     std::array<int, 3> disc_count;
     int cur_player;
-    //bool done;
-    //int winner;
     int heuristic;
     Point recommended_spot;
 private:
@@ -143,9 +135,7 @@ private:
         }
     }
 public:
-    OthelloBoard() {
-        //reset();
-    }
+    OthelloBoard() {}
     OthelloBoard operator=(const OthelloBoard& rhs) {
         for (int i = 0; i < SIZE; i++) {
             for (int j = 0; j < SIZE; j++) {
@@ -153,28 +143,10 @@ public:
             }
         }
         next_valid_spots = rhs.next_valid_spots;
-        //done = rhs.done;
-        //winner = rhs.winner;
         recommended_spot = rhs.recommended_spot;
         heuristic = rhs.heuristic;
         return *this;
 	}
-    // void reset() {
-    //     for (int i = 0; i < SIZE; i++) {
-    //         for (int j = 0; j < SIZE; j++) {
-    //             board[i][j] = EMPTY;
-    //         }
-    //     }
-    //     board[3][4] = board[4][3] = BLACK;
-    //     board[3][3] = board[4][4] = WHITE;
-    //     cur_player = BLACK;
-    //     disc_count[EMPTY] = 8*8-4;
-    //     disc_count[BLACK] = 2;
-    //     disc_count[WHITE] = 2;
-    //     next_valid_spots = get_valid_spots();
-    //     done = false;
-    //     winner = -1;
-    // }
     std::vector<Point> get_valid_spots() const {
         std::vector<Point> valid_spots;
         for (int i = 0; i < SIZE; i++) {
@@ -190,8 +162,6 @@ public:
     }
     bool put_disc(Point p) {
         if(!is_spot_valid(p)) {
-            //winner = get_next_player(cur_player);
-            //done = true;
             return false;
         }
         set_disc(p, cur_player);
@@ -201,20 +171,6 @@ public:
         // Give control to the other player.
         cur_player = get_next_player(cur_player);
         next_valid_spots = get_valid_spots();
-        // Check Win
-        // if (next_valid_spots.size() == 0) {
-        //     cur_player = get_next_player(cur_player);
-        //     next_valid_spots = get_valid_spots();
-        //     if (next_valid_spots.size() == 0) {
-        //         // Game ends
-        //         done = true;
-        //         int white_discs = disc_count[WHITE];
-        //         int black_discs = disc_count[BLACK];
-        //         if (white_discs == black_discs) winner = EMPTY;
-        //         else if (black_discs > white_discs) winner = BLACK;
-        //         else winner = WHITE;
-        //     }
-        // }
         set_heuristic();
         return true;
     }
@@ -304,24 +260,23 @@ public:
                     //cur += dangerSpots[i];
                 }
             }
-
-            int flip = disc_count[player] - disc_count[opponent];
-            if(disc_count[EMPTY] > 40)
-                heuristic = h*1 + mobi*10 + stable*10 + flip*-1;
-            else if(disc_count[EMPTY] > 20)
-                heuristic = h*1 + mobi*10 + stable*10 + flip*0;
-            else
-                heuristic = h*1 + mobi*10 + stable*10 + flip*2;
-
-            // for(int i = 0; i < 4; i++) {
-            //     Point c = corners[i];
-            //     if(get_disc(c) == player) {
-            //         Point p = xSquares[i];
-            //         //weight[p.x][p.y] = -abs(weight[p.x][p.y] / 2);
-            //         //p = cSquares[i*2+1];
-            //     }
-            // }
         }
+
+        int flip = disc_count[player] - disc_count[opponent];
+        if(disc_count[EMPTY] > 40)
+            heuristic = h*1 + mobi*10 + stable*10 + flip*-1;
+        else if(disc_count[EMPTY] > 20)
+            heuristic = h*1 + mobi*10 + stable*10 + flip*0;
+        else
+            heuristic = h*1 + mobi*10 + stable*10 + flip*2;
+        // for(int i = 0; i < 4; i++) {
+        //     Point c = corners[i];
+        //     if(get_disc(c) == player) {
+        //         Point p = xSquares[i];
+        //         //weight[p.x][p.y] = -abs(weight[p.x][p.y] / 2);
+        //         //p = cSquares[i*2+1];
+        //     }
+        // }
         //std::cout << "HEURISTIC " << heuristic << std::endl;
     }
 };
@@ -419,19 +374,7 @@ int minimax (OthelloBoard &curr_board, int depth, int alpha, int beta, bool isMa
 }
 
 void write_valid_spot(std::ofstream& fout) {
-/*
-    int n_valid_spots = next_valid_spots.size();
     srand(time(NULL));
-    // Choose random spot. (Not random uniform here)
-    int index = (rand() % n_valid_spots);
-    Point p = next_valid_spots[index];
-    // Remember to flush the output to ensure the last action is written to file.
-    fout << p.x << " " << p.y << std::endl;
-    fout.flush();
-*/
-
-    srand(time(NULL));
-    //int child = MIN;
     int value;
     Point p;
     if(next_valid_spots.size() == 1) {
@@ -443,7 +386,6 @@ void write_valid_spot(std::ofstream& fout) {
         int alpha = MIN;
         int beta = MAX;
         minimax(main_board, DEPTH, alpha, beta, true);
-        std::cout << "HEURISTIC LAST " << main_board.heuristic << std::endl;
         p = main_board.recommended_spot;
         std::cout << "LAST SPOT " << p.x << " " << p.y << std::endl;
         // for(auto spot : next_valid_spots) {
