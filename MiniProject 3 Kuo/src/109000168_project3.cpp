@@ -30,14 +30,14 @@ int player;
 int DEPTH;
 const int SIZE = 8;
 std::array<std::array<int, SIZE>, SIZE> weight = {{
-    {   4,  -3,  2,  2,  2,  2,  -3,  4},
-    {  -3,  -4, -1, -1, -1, -1,  -4, -3},
-    {   2,  -1,  1,  0,  0,  1,  -1,  2},
+    {   8,  -6,  2,  2,  2,  2,  -6,  8},
+    {  -6, -10, -1, -1, -1, -1, -10, -6},
+    {   2,  -1,  2,  0,  0,  2,  -1,  2},
     {   2,  -1,  0,  1,  1,  0,  -1,  2},
-    {   2,  -1,  9,  1,  1,  0,  -1,  2},
-    {   2,  -1,  1,  0,  0,  2,  -1,  2},
-    {  -3,  -4, -1, -1, -1, -1,  -4, -3},
-    {   4,  -3,  2,  2,  2,  2,  -3,  4}
+    {   2,  -1,  0,  1,  1,  0,  -1,  2},
+    {   2,  -1,  2,  0,  0,  2,  -1,  2},
+    {  -6, -10, -1, -1, -1, -1, -10, -6},
+    {   8,  -6,  2,  2,  2,  2,  -6,  8}
 }};
 std::array<std::array<int, SIZE>, SIZE> weight_copy;
 std::vector<Point> next_valid_spots;
@@ -186,48 +186,57 @@ public:
         for(int i = 0; i < 4; i++) {
             Point loc = corners[i];
             if(get_disc(loc) == player) {
+                bool next_corner;
                 Point p = xSquares[i];
                 weight_copy[p.x][p.y] = 4;
                 p = cSquares[i*2];
-                weight_copy[p.x][p.y] = 4;
+                weight_copy[p.x][p.y] = 8;
                 p = cSquares[i*2+1];
-                weight_copy[p.x][p.y] = 4;
+                weight_copy[p.x][p.y] = 8;
             }
         }
 
         int total_weight = 0;
         int opponent = get_next_player(player);
-        for(int i = 0; i < SIZE; i++) {
-            for(int j = 0; j < SIZE; j++) {
-                if(board[i][j] == player)
-                    total_weight += weight_copy[i][j];
-                else if(board[i][j] == opponent)
-                    total_weight -= weight_copy[i][j];
-            }
+        int i = 0;
+        while(i < 64) {
+            if(board[i/8][i%8] == player)
+                total_weight += weight_copy[i/8][i%8];
+            else if(board[i/8][i%8] == opponent)
+                total_weight -= weight_copy[i/8][i%8];
+            i++;
         }
-        int mobi = next_valid_spots.size();
-        if(cur_player == opponent)
-            mobi *= -1;
+        // for(int i = 0; i < SIZE; i++) {
+        //     for(int j = 0; j < SIZE; j++) {
+        //         if(board[i][j] == player)
+        //             total_weight += weight_copy[i][j];
+        //         else if(board[i][j] == opponent)
+        //             total_weight -= weight_copy[i][j];
+        //     }
+        // }
 
         int stable = 0;
-        if(disc_count[EMPTY] < 40) {
+        if(disc_count[EMPTY] < 44) {
             //player
+            std::array<std::array<int, SIZE>, SIZE> been;
             for(int i = 0; i < 4; i++) {
                 int idx = 0;
                 Point loc = corners[i];
                 while(idx < 8) { //vertical
-                    loc = loc + wall[i*2];
-                    if(get_disc(loc) != player)
+                    if(get_disc(loc) != player || been[loc.x][loc.y] == player)
                         break;
+                    been[loc.x][loc.y] = player;
+                    loc = loc + wall[i*2];
                     stable++;
                     idx++;
                 }
                 idx = 0;
                 loc = corners[i];
                 while(idx < 8) { //horizontal
-                    loc = loc + wall[i*2+1];
-                    if(get_disc(loc) != player)
+                    if(get_disc(loc) != player || been[loc.x][loc.y] == player)
                         break;
+                    been[loc.x][loc.y] = player;
+                    loc = loc + wall[i*2+1];
                     stable++;
                     idx++;
                 }
@@ -237,31 +246,37 @@ public:
                 int idx = 0;
                 Point loc = corners[i];
                 while(idx < 8) { //vertical
-                    loc = loc + wall[i*2];
-                    if(get_disc(loc) != opponent)
+                    if(get_disc(loc) != opponent || been[loc.y][loc.y] == opponent)
                         break;
+                    been[loc.x][loc.y] = opponent;
+                    loc = loc + wall[i*2];
                     stable--;
                     idx++;
                 }
                 idx = 0;
                 loc = corners[i];
                 while(idx < 8) { //horizontal
-                    loc = loc + wall[i*2+1];
-                    if(get_disc(loc) != opponent)
+                    if(get_disc(loc) != opponent || been[loc.y][loc.y] == opponent)
                         break;
+                    been[loc.x][loc.y] = opponent;
+                    loc = loc + wall[i*2+1];
                     stable--;
                     idx++;
                 }
             }
         }
+        
+        int mobi = next_valid_spots.size();
+        if(cur_player == opponent)
+            mobi *= -1;
 
         int flip = disc_count[player] - disc_count[opponent];
-        if(disc_count[EMPTY] > 40)
-            heuristic = total_weight + mobi + stable - flip;
+        if(disc_count[EMPTY] > 44)
+            heuristic = total_weight*5 + mobi*6 - flip;
         else if(disc_count[EMPTY] > 20)
-            heuristic = total_weight + mobi + stable;
+            heuristic = total_weight*5 + mobi*6 + stable*5;
         else
-            heuristic = total_weight + mobi + stable + flip;
+            heuristic = total_weight*3 + mobi*6 + stable*5 + flip;
         //std::cout << "HEURISTIC " << heuristic << std::endl;
     }
 };
@@ -290,7 +305,6 @@ void read_valid_spots(std::ifstream& fin) {
     }
     main_board.next_valid_spots = next_valid_spots;
     main_board.set_heuristic();
-    std::cout << "HEURISTIC INITIAL " << main_board.heuristic << std::endl;
 }
 
 int minimax (OthelloBoard &curr_board, int depth, int alpha, int beta, bool isMaximizingPlayer) {
