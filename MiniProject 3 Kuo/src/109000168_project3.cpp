@@ -7,6 +7,7 @@
 #include <bits/stdc++.h>
 #define MAX INT_MAX
 #define MIN INT_MIN
+#define DEPTH 5
 
 struct Point {
     int x, y;
@@ -27,7 +28,6 @@ struct Point {
 };
 
 int player;
-int DEPTH;
 const int SIZE = 8;
 std::array<std::array<int, SIZE>, SIZE> weight = {{
     {   10,  -6,  2,  2,  2,  2,  -6,  10},
@@ -178,8 +178,7 @@ public:
     void set_heuristic() {
         weight_copy = weight;
         for(int i = 0; i < 4; i++) {
-            Point loc = corners[i];
-            if(get_disc(loc) == player) {
+            if(get_disc(corners[i]) == player) {
                 Point p = xSquares[i];
                 weight_copy[p.x][p.y] = 6;
                 p = corners[i] + wall[i*2];
@@ -270,8 +269,6 @@ OthelloBoard main_board;
 
 void read_board(std::ifstream& fin) {
     fin >> player;
-    if (player == 1) DEPTH = 5;
-    else if(player == 2) DEPTH = 5;
     main_board.cur_player = player;
     for (int i = 0; i < SIZE; i++) {
         for (int j = 0; j < SIZE; j++) {
