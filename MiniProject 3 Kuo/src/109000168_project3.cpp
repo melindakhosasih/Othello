@@ -30,14 +30,14 @@ int player;
 int DEPTH;
 const int SIZE = 8;
 std::array<std::array<int, SIZE>, SIZE> weight = {{
-    {   8,  -6,  2,  2,  2,  2,  -6,  8},
+    {   10,  -6,  2,  2,  2,  2,  -6,  10},
     {  -6, -10, -1, -1, -1, -1, -10, -6},
     {   2,  -1,  2,  0,  0,  2,  -1,  2},
     {   2,  -1,  0,  1,  1,  0,  -1,  2},
     {   2,  -1,  0,  1,  1,  0,  -1,  2},
     {   2,  -1,  2,  0,  0,  2,  -1,  2},
     {  -6, -10, -1, -1, -1, -1, -10, -6},
-    {   8,  -6,  2,  2,  2,  2,  -6,  8}
+    {   10,  -6,  2,  2,  2,  2,  -6,  10}
 }};
 std::array<std::array<int, SIZE>, SIZE> weight_copy;
 std::vector<Point> next_valid_spots;
@@ -69,12 +69,6 @@ public:
     const std::array<Point, 4> xSquares {{
 	    Point(1, 1), Point(1, SIZE-2),
 	    Point(SIZE-2, 1), Point(SIZE-2, SIZE-2)
-    }};
-    const std::array<Point, 8> cSquares {{
-	    Point(0, 1), Point(1, 0),
-        Point(0, SIZE-2), Point(1, SIZE-2),
-        Point(SIZE-2, 0), Point(SIZE-1, 1),
-	    Point(SIZE-2, SIZE-1), Point(SIZE-1, SIZE-2)
     }};
     std::array<std::array<int, SIZE>, SIZE> board;
     std::vector<Point> next_valid_spots;
@@ -186,34 +180,25 @@ public:
         for(int i = 0; i < 4; i++) {
             Point loc = corners[i];
             if(get_disc(loc) == player) {
-                bool next_corner;
                 Point p = xSquares[i];
-                weight_copy[p.x][p.y] = 4;
-                p = cSquares[i*2];
+                weight_copy[p.x][p.y] = 6;
+                p = corners[i] + wall[i*2];
                 weight_copy[p.x][p.y] = 8;
-                p = cSquares[i*2+1];
+                p = corners[i] + wall[i*2+1];
                 weight_copy[p.x][p.y] = 8;
             }
         }
 
         int total_weight = 0;
         int opponent = get_next_player(player);
-        int i = 0;
-        while(i < 64) {
-            if(board[i/8][i%8] == player)
-                total_weight += weight_copy[i/8][i%8];
-            else if(board[i/8][i%8] == opponent)
-                total_weight -= weight_copy[i/8][i%8];
-            i++;
+        for(int i = 0; i < SIZE; i++) {
+            for(int j = 0; j < SIZE; j++) {
+                if(board[i][j] == player)
+                    total_weight += weight_copy[i][j];
+                else if(board[i][j] == opponent)
+                    total_weight -= weight_copy[i][j];
+            }
         }
-        // for(int i = 0; i < SIZE; i++) {
-        //     for(int j = 0; j < SIZE; j++) {
-        //         if(board[i][j] == player)
-        //             total_weight += weight_copy[i][j];
-        //         else if(board[i][j] == opponent)
-        //             total_weight -= weight_copy[i][j];
-        //     }
-        // }
 
         int stable = 0;
         if(disc_count[EMPTY] < 44) {
